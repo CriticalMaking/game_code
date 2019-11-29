@@ -12,6 +12,10 @@
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 
+String RECEIVE; 
+String SENDING; 
+char recArray[4]; 
+
 //config for bluetooth
 #define BLUEFRUIT_SPI_CS               8
 #define BLUEFRUIT_SPI_IRQ              7
@@ -33,7 +37,7 @@ Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
 // integer variable to hold current counter value
 int count = 0;
 int state = 0; 
-
+int counter = 0; 
 #define BUTTON_A  9
 #define BUTTON_B  6
 #define BUTTON_C  5
@@ -109,31 +113,71 @@ pinMode(BUTTON_C, INPUT_PULLUP);
 void loop()
 {
 
-//check for button presses 
-//advance state to 1 if any button pressed 
-
 switch (state) {
-  case 0:
-    {
+  case 0: 
+  {
+   //check for button presses 
+   //advance state to 1 if any button pressed 
+   Serial.println("waiting to button press"); 
+   buttonStateB = digitalRead(BUTTON_B);
+    if (buttonStateB != lastButtonStateB) {
+      if (buttonStateB == LOW) { 
+      state = 1;
+      Serial.print("waiting on char sequence from bluetooth");
+      ble.print("send 4 chars");   
+      }
+      }
+    lastButtonStateB = buttonStateB; 
+   }
+  break; 
+  case 1:
+    { 
        // wait for char sequence from bluetooth 
-  while ( ble.available() )
+   while ( ble.available() )
   {
     int c = ble.read();
     Serial.print((char)c);
+    RECEIVE+=char(c);
+    counter++;  
   }
+   if (counter>4) {
+    RECEIVE.toCharArray(recArray,5); 
+    for (int i=0; i<5; i++) {
+        Serial.println(recArray[i]);
+        delay(500); 
     }
-    state = 1;
-    break;
-  case 1:
-    {
-      //play sequence 
+    state = 2; 
+   }
     }
-    state =2; 
     break;
   case 2:
+    {
+      //play sequence 
+      for (int i=0; i<4; i++) {
+        if (recArray[i]=='R') {
+        //light up correct LED and pause
+        Serial.println("RED");
+        delay(500);    
+        }else if (recArray[i]=='Y'){
+        //light up correct LED and pause
+        Serial.println("YELLOW");
+        delay(500);  
+        }else if (recArray[i]=='G'){
+        //light up correct LED and pause 
+        Serial.println("GREEN");
+        delay(500); 
+        }else if (recArray[i]=='B'){
+         //light up correct LED and pause
+         Serial.println("BLUE");
+         delay(500);  
+        }
+      }
+    }
+    state =3; 
+    break;
+  case 3:
    {
    //wait for four button presses, check for match and send Y or N over bluetooth 
-    
     
     // Send Y or N to Bluefruit
     Serial.print("Sending: ");
