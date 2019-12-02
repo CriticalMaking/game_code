@@ -15,6 +15,8 @@
 String RECEIVE; 
 String SENDING; 
 char recArray[4]; 
+String BUTTONPRESSES; 
+
 
 //config for bluetooth
 #define BLUEFRUIT_SPI_CS               8
@@ -41,11 +43,15 @@ int counter = 0;
 #define BUTTON_A  9
 #define BUTTON_B  6
 #define BUTTON_C  5
+#define BUTTON_D  0 //change this and above to correct ones 
 bool lastButtonStateA; 
-bool lastButtonStateB; 
+bool lastButtonStateB;
+bool lastButtonStateC;
+bool lastButtonStateD;   
 bool buttonStateA; 
 bool buttonStateB; 
 bool buttonStateC; 
+bool buttonStateD; 
 
 void setup()
 {
@@ -178,14 +184,61 @@ switch (state) {
   case 3:
    {
    //wait for four button presses, check for match and send Y or N over bluetooth 
-    
-    // Send Y or N to Bluefruit
-    Serial.print("Sending: ");
-    Serial.println("y");
-    // Send input data to host via Bluefruit
-    ble.print("RGYB");
-  }
+   int NumButtonPress = 0; 
+   while (NumButtonPress <5) {
+    //RED BUTTON 
+    buttonStateA = digitalRead(BUTTON_A);
+    if (buttonStateA != lastButtonStateA) {
+      if (buttonStateA == LOW) { 
+      NumButtonPress++;
+      BUTTONPRESSES += "R";   
+      }
+      }
+    // YELLOW BUTTON 
+    buttonStateB = digitalRead(BUTTON_B);
+    if (buttonStateB != lastButtonStateB) {
+      if (buttonStateB == LOW) { 
+      NumButtonPress++;
+      BUTTONPRESSES += "Y";   
+      }
+      }
+    // GREEN BUTTON 
+    buttonStateC = digitalRead(BUTTON_C);
+    if (buttonStateC != lastButtonStateC) {
+      if (buttonStateC == LOW) { 
+      NumButtonPress++;
+      BUTTONPRESSES += "G";   
+      }
+      }
+    // BLUE BUTTON 
+    buttonStateD = digitalRead(BUTTON_D);
+    if (buttonStateD != lastButtonStateD) {
+      if (buttonStateD == LOW) { 
+      NumButtonPress++;
+      BUTTONPRESSES += "B";   
+      }
+      }
+    lastButtonStateA = buttonStateA; 
+    lastButtonStateB = buttonStateB; 
+    lastButtonStateC = buttonStateC; 
+    lastButtonStateD = buttonStateD; 
+   }
+    // now do comparison between received string and button press string
+    if (BUTTONPRESSES ==RECEIVE) {
+        Serial.print("Sending: ");
+        Serial.println("Success");
+        // Send input data to host via Bluefruit
+        ble.print("Success!");
+    }else {
+       Serial.print("Sending: ");
+        Serial.println("fail");
+        // Send input data to host via Bluefruit
+        ble.print("fail");
+    }
     state =0; //return to state 0  
+    RECEIVE = ""; 
+    BUTTONPRESSES = ""; 
     break;
+}
 }
 }
