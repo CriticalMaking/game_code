@@ -112,6 +112,7 @@ void setup()
 pinMode(BUTTON_A, INPUT_PULLUP); 
 pinMode(BUTTON_B, INPUT_PULLUP);
 pinMode(BUTTON_C, INPUT_PULLUP);
+pinMode(BUTTON_D, INPUT_PULLUP);
 
 }
 
@@ -124,16 +125,17 @@ switch (state) {
   {
    //check for button presses 
    //advance state to 1 if any button pressed 
-   Serial.println("waiting to button press"); 
-   buttonStateB = digitalRead(BUTTON_B);
-    if (buttonStateB != lastButtonStateB) {
+   //maybe play a pattern here on the leds, or chase them until button press? 
+   Serial.println("waiting for button press to start"); 
+   buttonStateB = digitalRead(BUTTON_A);
+    if (buttonStateA != lastButtonStateA) {
       if (buttonStateB == LOW) { 
       state = 1;
       Serial.print("waiting on char sequence from bluetooth");
-      ble.print("send 4 chars");   
+      ble.print("send 4 chars combo of RYGB");   
       }
       }
-    lastButtonStateB = buttonStateB; 
+    lastButtonStateA = buttonStateA; 
    }
   break; 
   case 1:
@@ -190,6 +192,7 @@ switch (state) {
     buttonStateA = digitalRead(BUTTON_A);
     if (buttonStateA != lastButtonStateA) {
       if (buttonStateA == LOW) { 
+      //light up RED LED 
       NumButtonPress++;
       BUTTONPRESSES += "R";   
       }
@@ -198,6 +201,7 @@ switch (state) {
     buttonStateB = digitalRead(BUTTON_B);
     if (buttonStateB != lastButtonStateB) {
       if (buttonStateB == LOW) { 
+        //light up YELLOW LED 
       NumButtonPress++;
       BUTTONPRESSES += "Y";   
       }
@@ -205,7 +209,8 @@ switch (state) {
     // GREEN BUTTON 
     buttonStateC = digitalRead(BUTTON_C);
     if (buttonStateC != lastButtonStateC) {
-      if (buttonStateC == LOW) { 
+      if (buttonStateC == LOW) {
+      //light up GREEN LED  
       NumButtonPress++;
       BUTTONPRESSES += "G";   
       }
@@ -214,6 +219,7 @@ switch (state) {
     buttonStateD = digitalRead(BUTTON_D);
     if (buttonStateD != lastButtonStateD) {
       if (buttonStateD == LOW) { 
+      //light up BLUE LED 
       NumButtonPress++;
       BUTTONPRESSES += "B";   
       }
@@ -224,18 +230,20 @@ switch (state) {
     lastButtonStateD = buttonStateD; 
    }
     // now do comparison between received string and button press string
-    if (BUTTONPRESSES ==RECEIVE) {
+    if (BUTTONPRESSES ==RECEIVE) { //they match!!!
         Serial.print("Sending: ");
         Serial.println("Success");
+        //maybe play crazy LED sequence here?
         // Send input data to host via Bluefruit
         ble.print("Success!");
     }else {
        Serial.print("Sending: ");
         Serial.println("fail");
+        //maybe play difference crazy LED sequence here?
         // Send input data to host via Bluefruit
         ble.print("fail");
     }
-    state =0; //return to state 0  
+    state =0; //return to state 0 to try again  
     RECEIVE = ""; 
     BUTTONPRESSES = ""; 
     break;
